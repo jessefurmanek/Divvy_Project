@@ -10,14 +10,10 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script>
-var uk = "uk.json";
 
 var width = 960;  //call this here instead of in the D3 block as it would cause both the svg and the map load at once  which is slower?
 					//from bost.ocks.org "the rest of the page will render while we wait for the TopoJSON file to download""
 var height = 1160;
-
-var subunits = topojson.feature(uk, uk.objects.subunits);
-
 var projection = d3.geo.albers()
 	 .center([0, 55.4])
 	 .rotate([4.4, 0])
@@ -33,6 +29,9 @@ var svg = d3.select("body").append("svg")
      .attr("height", height);
 
 d3.json("uk.json", function(error, uk) {
+	
+	var subunits = topojson.feature(uk, uk.objects.subunits);
+	
 	svg.append("path")
 	    .datum(topojson.feature(uk, uk.objects.subunits))
 	    .attr("d", path);	  
