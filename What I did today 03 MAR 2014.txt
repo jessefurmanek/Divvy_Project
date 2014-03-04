@@ -1,0 +1,1 @@
+Installed Homebrew, GDAL, TopoJSON, and Node.Js
