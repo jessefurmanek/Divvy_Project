@@ -2,7 +2,7 @@ import csv
 import json
 
 csvfile = open('Divvy_Stations_2013.csv', 'r')
-jsonfile = open('divvy_stations.json', 'w')
+jsonfile = open('divvy_stationstest.json', 'w')
 
 fieldnames = ("FirstName","LastName","IDNumber","Message")
 reader = csv.reader( csvfile)
