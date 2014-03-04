@@ -33,7 +33,7 @@ var svg = d3.select("body").append("svg")
 
 d3.json("uk.json", function(error, uk) {
 	svg.append("path")
-	    .datum(subunits)
+	    .datum(topojson.feature(uk, uk.objects.subunits))
 	    .attr("d", path);	  
 });
 
