@@ -46,7 +46,7 @@
 	    	 mapTypeId: google.maps.MapTypeId.ROADMAP
 	 	 });
 		 // Load the station data. When the data comes back, create an overlay.
-		 d3.json("divvy_stations.json", function(data) {
+		 d3.json("divvy_stations_w_hood.json", function(data) {
 		   var overlay = new google.maps.OverlayView();
 
 		   // Add the container when the overlay is added to the map.
@@ -72,11 +72,11 @@
 		             .attr("cx", padding)
 		             .attr("cy", padding);		
 				 // Add a label.
-				// marker.append("svg:text")
-				  //   .attr("x", padding + 7)
-				    // .attr("y", padding)
+				 //marker.append("svg:text")
+				   //  .attr("x", padding + 7)
+				     //.attr("y", padding)
 				     //.attr("dy", ".31em")
-				     //.text(function(d) { return d.name; });
+				     //.text(function(d) { return d.neighborhood; });
 
 			     function transform(d) {
 				      d = new google.maps.LatLng(d.latitude, d.longitude);
