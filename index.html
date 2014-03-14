@@ -5,6 +5,7 @@
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
 	  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
 	  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	  <script src="jquery-1.6.1.js"></script>
       
 	  <style type="text/css">
       html, body, #map {
@@ -48,6 +49,7 @@
 		 // Load the station data. When the data comes back, create an overlay.
 		 d3.json("divvy_stations_w_hood.json", function(data) {
 		   var overlay = new google.maps.OverlayView();
+		   var station_table = 
 
 		   // Add the container when the overlay is added to the map.
 		   overlay.onAdd = function() {
@@ -71,6 +73,8 @@
 				     .attr("r", function (d) { return (d.dpcapacity)/5; })
 		             .attr("cx", padding)
 		             .attr("cy", padding);		
+					 
+					 
 				 // Add a label.
 				 //marker.append("svg:text")
 				   //  .attr("x", padding + 7)
@@ -91,6 +95,9 @@
 		   // Bind our overlay to the map…
 		   overlay.setMap(map);
 		 });
+		 
+		 //add jSON file from dropbox
+		// var neighborhoodData = $.getJSON( "https://www.dropbox.com/s/c02ip8mz4za9mxu/divvy_trips_w_neighborhoods.json", function( data ) {};
 		 
 	  </script>
   </body>
