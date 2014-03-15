@@ -47,18 +47,27 @@
 	    	 center: new google.maps.LatLng(41.909460, -87.634145),
 	    	 mapTypeId: google.maps.MapTypeId.ROADMAP
 	 	 });
-	
+		 
+	 	
 		 
 		 // Load the station data. When the data comes back, create an overlay.
-		 d3.json("divvy_neighborhoods.json", function(data) {
-		   var overlay = new google.maps.OverlayView();
+	 d3.json("divvy_neighborhoods.json", function(data) {
+ 		$.getJSON('divvy_matrix.json', function(divvy_matrix) {
+	
+ 			test = divvy_matrix[1].name_from;
+			alert(test);
+			
+ 			//do stuff with your data here
+ 		
+		
+ 		
 		   
-		   $.getJSON('neighborhood_table.json', function(data) {
-		       //do stuff with your data here
-
-		   });
-		 
-
+		   
+		   
+		   
+		   
+		   
+		   var overlay = new google.maps.OverlayView();
 		   // Add the container when the overlay is added to the map.
 		   overlay.onAdd = function() {
 		     var layer = d3.select(this.getPanes().overlayLayer).append("div")
@@ -102,6 +111,8 @@
 		   };
 		   // Bind our overlay to the map…
 		   overlay.setMap(map);
+		   
+		   });
 		 });
 		 
 		 //add jSON file from dropbox
