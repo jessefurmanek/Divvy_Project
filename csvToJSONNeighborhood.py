@@ -1,14 +1,23 @@
 import csv
 import json
 
-csvfile = open('Neighborhood_table.csv', 'r')
-jsonfile = open('divvy_neighborhoods.json', 'w')
+csvfile = open('neighborhood_table.csv', 'r')
+jsonfile = open('divvy_neighborhoods_test.json', 'w')
 
 #choose fieldnames to be attached
 fieldnames = ("name", "number", "latitude","longitude")
+output = {'neighborhoods': []}
 
-reader = csv.DictReader(csvfile, fieldnames)
+
+reader = csv.DictReader(csvfile)
 for row in reader:
-    json.dump(row, jsonfile)
-    jsonfile.write(', ')
+    output['neighborhoods'].append({
+        row['number']:{
+            'name': row['name'],
+            'number': row['number'],
+            'latitude': row['latitude'],
+            'longitude': row ['longitude']
+        },
+    })    
+json.dump(output, jsonfile)
 print "done"

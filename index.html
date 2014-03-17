@@ -53,19 +53,10 @@
 		 // Load the station data. When the data comes back, create an overlay.
 	 d3.json("divvy_neighborhoods.json", function(data) {
  		$.getJSON('divvy_matrix.json', function(divvy_matrix) {
-	
- 			test = divvy_matrix[1].name_from;
-			alert(test);
-			
+			$.getJSON('divvy_neighborhoods_table.json', function(neighborhood_table){
+
+				alert(neighborhood_table['s1']['name'])	
  			//do stuff with your data here
- 		
-		
- 		
-		   
-		   
-		   
-		   
-		   
 		   
 		   var overlay = new google.maps.OverlayView();
 		   // Add the container when the overlay is added to the map.
@@ -100,18 +91,22 @@
 				     //.text(function(d) { return d.neighborhood; });
 
 			     function transform(d) {
+					  var x = d['number']
+					  
 				      d = new google.maps.LatLng(d.latitude, d.longitude);
 				      d = projection.fromLatLngToDivPixel(d);
+					  
 					  
 				      return d3.select(this) //you can do stuff after returning?
 							.style("left", (d.x - padding) + "px")
 					        .style("top", (d.y - padding) + "px");
 					}	
+				
    		     };
 		   };
 		   // Bind our overlay to the map…
 		   overlay.setMap(map);
-		   
+		   	});
 		   });
 		 });
 		 
