@@ -51,14 +51,20 @@
 	 	
 		 
 		 // Load the station data. When the data comes back, create an overlay.
-	 d3.json("divvy_neighborhoods.json", function(data) {
- 		$.getJSON('divvy_matrix.json', function(divvy_matrix) {
-			$.getJSON('divvy_neighborhoods_table.json', function(neighborhood_table){
+	 d3.json("divvy_neighborhoods.json", function(error, json) {
+	    //check if the file load fails
+		if (error) return console.warn(error);
+	    data = json;
+		
+ 		$.getJSON('divvy_trips_matrix.json', function(divvy_matrix) {
+			
+			d3.json('divvy_neighborhoods_table.json', function(neighborhood_table){
 
-				alert(neighborhood_table['s1']['name'])	
+				alert(divvy_matrix['s1']['s1'])	
  			//do stuff with your data here
 		   
 		   var overlay = new google.maps.OverlayView();
+		   
 		   // Add the container when the overlay is added to the map.
 		   overlay.onAdd = function() {
 		     var layer = d3.select(this.getPanes().overlayLayer).append("div")
@@ -78,21 +84,21 @@
 				     .attr("class", "marker");
 					 
 				 marker.append("svg:circle")  //add circles
-				     .attr("r", function (d) { return 3; })
+				 								//size of circles is dependent on the current neighborhood selected
+				     .attr("r", function (d) { return Math.log(divvy_matrix['s17'][d.number]); })
 		             .attr("cx", padding)
 		             .attr("cy", padding);		
 					 
 					 
 				 // Add a label.
-				 //marker.append("svg:text")
-				   //  .attr("x", padding + 7)
-				     //.attr("y", padding)
-				     //.attr("dy", ".31em")
-				     //.text(function(d) { return d.neighborhood; });
+			//	 marker.append("svg:text")
+			//	     .attr("x", padding + 7)
+			//	     .attr("y", padding)
+			//	     .attr("dy", ".31em")
+			//	     .text(function(d) { return d.number; });
 
 			     function transform(d) {
-					  var x = d['number']
-					  
+					  var x = d['number'];
 				      d = new google.maps.LatLng(d.latitude, d.longitude);
 				      d = projection.fromLatLngToDivPixel(d);
 					  
