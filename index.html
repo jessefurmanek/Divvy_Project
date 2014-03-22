@@ -7,8 +7,9 @@
 	  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 
-      
+     
 	  <style type="text/css">
+	  /*stylin*/
        #map {
         width: 800px;
         height: 550px;
@@ -39,14 +40,19 @@
 	    height: 60px;
 	    padding-right: 100px;
 	    font: 10px sans-serif;
-		color: green;
-		/*text-shadow: 1px 1px 1px white;*/
+		fill: black;
+		/*text-shadow: 1px 1px 4px #white;*/
 	  }
 
 	  .stations circle {
 	    fill: #25F;
 	    stroke: grey;
 	    stroke-width: .5px;
+	  }
+	  
+	  .stations text{
+		
+		
 	  }
 	  
 	  </style>
@@ -56,119 +62,109 @@
  <div id = "title">Divvy Bike Neighborhood Migration Patterns</div>
 <body>
 	  
-	  <div id="map"></div>
-	  <script type="text/javascript">
-	
+<div id="map"></div>
+<script type="text/javascript">
 
-	var map = new google.maps.Map(d3.select("#map").node(), {
-	    	 zoom: 13,
-	    	 center: new google.maps.LatLng(41.909460, -87.634145),
-	    	 mapTypeId: google.maps.MapTypeId.ROADMAP
-	 });
-	 
-	 var neighborhood = 's1';
+  	 var neighborhood = 's1';
 		 
 	 // Load the station data. When the data comes back, create an overlay.
 	
-	d3.json("divvy_neighborhoods.json", function(error, json) {
-		
+	 d3.json("divvy_neighborhoods.json", function(error, json) {
 		if (error) return console.warn(error);
 	    data = json;
-		
- 	d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
-			//if the data don't load correctly, throw an error on the console
-			if (matrix_error) return console.warn(matrix_error);
-				
-			var dropDownData = data;
-			//do stuff with your data here		
 			
-			//create menu 
-			var dropDown = d3.select("#sidebar")
+		var dropDownData = data;
+		//do stuff with your data here		
+		
+		//create menu 
+		var dropDown = d3.select("#sidebar")
 			.append("select")
 			//bind data to "option" elements
-			dropDown.selectAll("option")
+		dropDown.selectAll("option")
 			.data(dropDownData)
 			.enter().append("option")
-			.text(function(d){ return d.name});
-
-				
-			// Set the intial value of drop-down when page loads
-		    dropDown.property("value", "Boystown");
-			
-			$("#sidebar").on('load change', function() {
-				//dropDown.node().options[dropDown.node().selectedIndex].value
-				neighborhood = 's'+(dropDown.node().selectedIndex+1);
-				alert(neighborhood);
-			
-			 
-		   var overlay = new google.maps.OverlayView();
-		   
-		   
-		   // Add the container when the overlay is added to the map.
-		   
-		   overlay.onAdd = function() {
-		     var layer = d3.select(this.getPanes().overlayLayer).append("div")
-		         .attr("class", "stations");
+			.text(function(d){ return d.name});	 
 	
-	
-	   // Draw each marker as a separate SVG element.
-		 	overlay.draw = function() {
-					
-			var projection = this.getProjection(),
-		          padding = 20;
-
+		// Set the intial value of drop-down when page loads
+		//dropDown.property("value", "Boystown");
 		
-				
-				
+	
+		//create the map
+	  	var map = new google.maps.Map(d3.select("#map").node(), {
+	  	    	 zoom: 13,
+	  	    	 center: new google.maps.LatLng(41.909460, -87.634145),
+	  	    	 mapTypeId: google.maps.MapTypeId.ROADMAP
+	  	 });
+ 		 
+    	$("#sidebar").on('load change', function() {
+    	 		//dropDown.node().options[dropDown.node().selectedIndex].value	
+    	 		neighborhood = 's'+(dropDown.node().selectedIndex+1);
+    	 		alert(neighborhood);	
+			
+			   
+	   d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
+		//if the data don't load correctly, throw an error on the console
+		if (matrix_error) return console.warn(matrix_error);
+			
+		var overlay = new google.maps.OverlayView();
+   
+		   
+		// Add the container when the overlay is added to the map.   
+		overlay.onAdd = function() {
+			var layer = d3.select(this.getPanes().overlayLayer).append("div")
+		    .attr("class", "stations");
+	
+	
+	  	// Draw each marker as a separate SVG element.
+		overlay.draw = function() {
+			var projection = this.getProjection(),
+		          padding = 10;
+	
 			var marker = layer.selectAll("svg")
-				      .data(data);
-					 	 
-		  	
-			marker.selectAll("svg").data(data).each().exit().remove();
-			 		 
-		    marker.each(transform) // update existing markers
-		     .enter().append("svg:svg")
-		     .each(transform)
-		     .attr("class", "marker");
-			 		 	
-			 
-			 marker.append("svg:circle")  //add circles
-				 								//size of circles is dependent on the current neighborhood selected
-				     .attr("r", function (d) { return Math.log(divvy_matrix[neighborhood][d.number]); })
-		             .attr("cx", padding)
-		             .attr("cy", padding);		
-					 
-			marker.selectAll("text").data(data).each().exit().remove();		 
-				 // Add a label.
+				.data(data)
+		      	.each(transform) // update existing markers position (when zooming for example)	
+				.enter().append("svg:svg")
+				.each(transform)
+				.attr("class", "marker");
+			
+							
+				marker.append("svg:circle")  //add circles
+				
+				//size of circles is dependent on the current neighborhood selected
+				.attr("r", function (d) { return Math.log(divvy_matrix[neighborhood][d.number]); })
+				.attr("cx", padding)
+				.attr("cy", padding);				 
+			
+			 // Add a label. 
 			 marker.append("svg:text")
 				     .attr("x", padding+10)
 				     .attr("y", padding)
 				     .attr("dy", ".31em")
 				     .text(function(d) { return d.name; });
 					 
+				 
 					 
-			     function transform(d) {
-					  var x = d['number'];
-				      d = new google.maps.LatLng(d.latitude, d.longitude);
-				      d = projection.fromLatLngToDivPixel(d);
-					  	
-				      return d3.select(this) //you can do stuff after returning?
-							.style("left", (d.x - padding) + "px")
-					        .style("top", (d.y - padding) + "px");
-					}	
-   		     };
-			  	 
+			function transform(d) {
+				 d = new google.maps.LatLng(d.latitude, d.longitude);
+				 d = projection.fromLatLngToDivPixel(d);
+
+				//this is not performing actions after a return but giving more detail to the returned object
+				//i.e. it could have been written like this: d3.select(this).style("left", (d.x - padding) + "px").style("top", (d.y - padding) + "px");
+				 return d3.select(this) 
+					.style("left", (d.x - padding) + "px")
+		        	.style("top", (d.y - padding) + "px");  
+				}	
+   		     };			  	 
 		   };
 		   
 		   // Bind our overlay to the map…
 		   overlay.setMap(map);
-		   
-		  
-		   
-		    }); 
-		   });
-		 });
+		}); 
+	 });
 		 
+	});
+		 
+
 		 //add jSON file from dropbox
 		// var neighborhoodData = $.getJSON( "https://www.dropbox.com/s/c02ip8mz4za9mxu/divvy_trips_w_neighborhoods.json", function( data ) {};
 		 
