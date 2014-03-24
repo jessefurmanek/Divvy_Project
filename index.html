@@ -30,6 +30,16 @@
 		background-color: white;
 	  }
 	  
+	  #startingPoint{
+		fill: green;
+		text-decoration:underline;
+	  }
+	  
+	  #startingPointText{
+		fill: black;
+		font-weight:bold;
+		font: 13px sans-serif;
+	  }
 	  
 	  .stations, .stations svg {
 	    position: absolute;
@@ -68,7 +78,9 @@
   	 var neighborhood = 's1';
 		 
 	 // Load the station data. When the data comes back, create an overlay.
-	
+	 
+	 
+	 d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 	 d3.json("divvy_neighborhoods.json", function(error, json) {
 		if (error) return console.warn(error);
 	    data = json;
@@ -89,17 +101,32 @@
 		//dropDown.property("value", "Boystown");
 		
 	
-		//create the map
+		//create the initial map
+		
 	  	var map = new google.maps.Map(d3.select("#map").node(), {
 	  	    	 zoom: 13,
 	  	    	 center: new google.maps.LatLng(41.909460, -87.634145),
 	  	    	 mapTypeId: google.maps.MapTypeId.ROADMAP
 	  	 });
- 		 
+		 
+	  	
     	$("#sidebar").on('load change', function() {
-    	 		//dropDown.node().options[dropDown.node().selectedIndex].value	
-    	 		neighborhood = 's'+(dropDown.node().selectedIndex+1);
-    	 		alert(neighborhood);	
+			//update neighborhood to current dropdown selection
+		  neighborhood = 's'+(dropDown.node().selectedIndex+1);
+		  
+		  
+		  neighborhoods_table[neighborhood]["longitude"]
+			//orient the map over the chosen neighbordhood
+		  	map = new google.maps.Map(d3.select("#map").node(), {
+		  	    	 zoom: 13,
+		  	    	 center: new google.maps.LatLng(neighborhoods_table[neighborhood]["latitude"], neighborhoods_table[neighborhood]["longitude"]),
+		  	    	 mapTypeId: google.maps.MapTypeId.ROADMAP
+		  	 });	
+				
+		
+				//dropDown.node().options[dropDown.node().selectedIndex].value	
+    	 		
+    	 	
 			
 			   
 	   d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
@@ -113,35 +140,43 @@
 		overlay.onAdd = function() {
 			var layer = d3.select(this.getPanes().overlayLayer).append("div")
 		    .attr("class", "stations");
-	
-	
+  			
+			d3.selectAll("circle")
+  				.style("fill", "none")
+  				.style("stroke", "none");	
+			
+			d3.selectAll("text")
+				.text("");	
+					
 	  	// Draw each marker as a separate SVG element.
 		overlay.draw = function() {
 			var projection = this.getProjection(),
 		          padding = 10;
-	
-			var marker = layer.selectAll("svg")
+			marker = layer.selectAll("svg")
 				.data(data)
 		      	.each(transform) // update existing markers position (when zooming for example)	
 				.enter().append("svg:svg")
 				.each(transform)
-				.attr("class", "marker");
-			
-							
-				marker.append("svg:circle")  //add circles
+				.attr("class", "marker");	
 				
+				
+				//.attr("id", "startingPoint")
+				
+				marker.append("svg:circle")  //add circles
 				//size of circles is dependent on the current neighborhood selected
 				.attr("r", function (d) { return Math.log(divvy_matrix[neighborhood][d.number]); })
 				.attr("cx", padding)
-				.attr("cy", padding);				 
-			
+				.attr("cy", padding)
+				.attr("id", function (d) {if (d.number===neighborhood){return "startingPoint";}});	
+				
+									
 			 // Add a label. 
 			 marker.append("svg:text")
 				     .attr("x", padding+10)
 				     .attr("y", padding)
 				     .attr("dy", ".31em")
-				     .text(function(d) { return d.name; });
-					 
+				     .text(function(d) { return d.name; })
+					 .attr("id", function (d) {if (d.number===neighborhood){return "startingPointText";}});			 
 				 
 					 
 			function transform(d) {
@@ -159,6 +194,7 @@
 		   
 		   // Bind our overlay to the map…
 		   overlay.setMap(map);
+		   	 });
 		}); 
 	 });
 		 
