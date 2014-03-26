@@ -9,7 +9,23 @@
 
      
 	  <style type="text/css">
+	  
 	  /*stylin*/
+	  
+	  div.tooltip{
+		   position: absolute;
+		   text-align: center;
+		   max-width: 200px;
+		   max-height: 30px;
+		   padding: 2px;
+		   font: 12px sans-serif;
+		   background: #ddd;
+		   border: solid 1px #aaa;
+		   border-radius: 10px;
+		   pointer-events: none;
+		   font-weight:bold;
+	  }
+	  
        #map {
         width: 800px;
         height: 550px;
@@ -32,13 +48,12 @@
 	  
 	  #startingPoint{
 		fill: green;
-		text-decoration:underline;
 	  }
 	  
 	  #startingPointText{
 		fill: black;
 		font-weight:bold;
-		font: 13	px sans-serif;
+		font: 13px sans-serif;
 		text-shadow: 2px 2px 10px green;
 	  }
 	  
@@ -51,7 +66,7 @@
 	    height: 60px;
 	    padding-right: 100px;
 	    font: 10px sans-serif;
-		fill: black;
+		fill: none;
 	  }
 
 	  .stations circle {
@@ -61,21 +76,22 @@
 	  }
 	  
 	  .stations text{
-		  text-shadow: 1px 1px 20px blue;
-
-		
+		  text-shadow: 1px 1px 10px white;
 	  }
+	  
+	  
 	  
 	  </style>
 
 </head>	
  <div id = "sidebar"></div>
+ <div id = "neighborhoodButton"></div>
  <div id = "title">Divvy Bike Neighborhood Migration Patterns</div>
 <body>
 	  
 <div id="map"></div>
 <script type="text/javascript">
-
+	
   	 var neighborhood = 's1';
 		 
 	 // Load the station data. When the data comes back, create an overlay.
@@ -112,20 +128,13 @@
 		 
  		var styles = [  //update the appearance of the map so that it no longer displays neighborood/street labels
  			{
- 			    featureType: "road",
+ 			    featureType: "all",
  			    elementType: "labels",
  			    stylers: [
  			      { visibility: "off" }
  			    ]
- 			 },
-  			{
-  			    featureType: "administrative",
-  			    elementType: "labels",
-  			    stylers: [
-  			      { visibility: "off" }
-  			    ]
-  			 }
- 			];
+ 			 }
+			];
 			map.setOptions({styles:styles});
  			 //remove labels
  		
@@ -160,7 +169,7 @@
 		   
 		// Add the container when the overlay is added to the map.   
 		overlay.onAdd = function() {
-			var layer = d3.select(this.getPanes().overlayLayer).append("div")
+			var layer = d3.select(this.getPanes().overlayMouseTarget).append("div")  //overlayMouseTarget is used instead of overylayLayer
 		    .attr("class", "stations");
   			
 			d3.selectAll("circle")
@@ -169,7 +178,11 @@
 			
 			d3.selectAll("text")
 				.text("");	
-					
+				
+			var div = d3.select("body").append("div")
+			     .attr("class", "tooltip")
+				 .style("opacity", 1e-6);
+				 
 	  	// Draw each marker as a separate SVG element.
 		overlay.draw = function() {
 			var projection = this.getProjection(),
@@ -189,18 +202,37 @@
 				.attr("r", function (d) { return Math.log(divvy_matrix[neighborhood][d.number]); })
 				.attr("cx", padding)
 				.attr("cy", padding)
-				.attr("id", function (d) {if (d.number===neighborhood){return "startingPoint";}});	
-				
-									
+				.attr("id", function (d) {if (d.number===neighborhood){return "startingPoint";}})
+				.on("mouseover", mouseover)
+				.on("mousemove", mousemove)
+				.on("mouseout", mouseout);	
+						
 			 // Add a label. 
 			 marker.append("svg:text")
 				     .attr("x", padding+10)
 				     .attr("y", padding)
 				     .attr("dy", ".31em")
 				     .text(function(d) { return d.name; })
-					 .attr("id", function (d) {if (d.number===neighborhood){return "startingPointText";}});			 
-				 
-					 
+					 .attr("id", function (d) {if (d.number===neighborhood){return "startingPointText";}});			
+				  
+			 function mouseover() {
+				   div.transition()
+				       .duration(300)
+				       .style("opacity", 1);
+				 }
+
+			 function mousemove(d) {
+				   div.text(d.name+ ": " + divvy_matrix[neighborhood][d.number])
+			       .style("left", (d3.event.pageX +25) + "px")
+			       .style("top", (d3.event.pageY - 12) + "px");
+			 }
+
+			 function mouseout() {
+				   div.transition()
+			       .duration(500)
+			       .style("opacity", 1e-6);
+			}		 
+			
 			function transform(d) {
 				 d = new google.maps.LatLng(d.latitude, d.longitude);
 				 d = projection.fromLatLngToDivPixel(d);
@@ -216,18 +248,20 @@
 		   
 		   // Bind our overlay to the map…
 		   overlay.setMap(map);
+			
 		   	 });
 		}); 
 	 });
 		 
 	});
-		 
-
 		 //add jSON file from dropbox
 		// var neighborhoodData = $.getJSON( "https://www.dropbox.com/s/c02ip8mz4za9mxu/divvy_trips_w_neighborhoods.json", function( data ) {};
 		 
 	  </script>
 	  
+	<script>  
+ 	
+	</script>
 	 
   </body>
  
