@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<!-- //note: highly derivative of Mike Bostock's example: http://bl.ocks.org/mbostock/899711-->
+<!-- note: highly derivative of Mike Bostock's example: http://bl.ocks.org/mbostock/899711 ; the code creating the line derived from https://c9.io/victorsc/d3js_google_maps-->
  <head>
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
 	  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
@@ -184,7 +184,10 @@
 				 .style("opacity", 1e-6);
 				 
 	  	// Draw each marker as a separate SVG element.
+		
+		
 		overlay.draw = function() {
+			var node_coord = {};
 			var projection = this.getProjection(),
 		          padding = 10;
 			marker = layer.selectAll("svg")
@@ -213,18 +216,96 @@
 				     .attr("y", padding)
 				     .attr("dy", ".31em")
 				     .text(function(d) { return d.name; })
-					 .attr("id", function (d) {if (d.number===neighborhood){return "startingPointText";}});			
-				  
+					 .attr("id", function (d) {if (d.number===neighborhood){return "startingPointText";}});	
+					 
+					 //adding lines
+			 
+			 
+			 var markerLink = layer.selectAll(".links")
+			      .data(json.links)
+			      .each(pathTransform) // update existing markers       
+			      .enter().append("svg:svg")
+				  .attr("class", "links")
+				  .each(pathTransform);
+			
+		function pathTransform(d) {
+			  var t, b, l, r, w, h, currentSvg;
+			  $(this).empty(); // get rid of the old lines (cannot use d3 .remove() because i cannot use selectors after ... )
+
+			  var dsrc = new google.maps.LatLng(node_coord[d.source-1 + "," + 1], node_coord[d.source-1 + "," + 0]);
+			  var dtrg = new google.maps.LatLng(node_coord[d.target-1 + "," + 1], node_coord[d.target-1 + "," + 0]);
+			  var d1 = projection.fromLatLngToDivPixel(dsrc);
+			  var d2 = projection.fromLatLngToDivPixel(dtrg);
+						if ( d1.y < d2.y ) {
+					            t = d1.y;
+					            b = d2.y;
+					        } else {
+					            t = d2.y;
+					            b = d1.y;
+					        }
+					        if ( d1.x < d2.x ) {
+					            l = d1.x;
+					            r = d2.x;
+					        } else {
+					            l = d2.x;
+					            r = d1.x; 
+					        }
+					        currentSvg = d3.select(this)
+					            .style("left", (l) + "px")
+					            .style("top", (t) + "px")
+					            .style("width", (r - l) + "px")
+					            .style("height", (b - t) + "px");
+					        // drawing the diagonal lines inside the svg elements. We could use 2 cases instead of for but maybe you will need to orient your graph (so you can use some arrows)
+					        if (( d1.y < d2.y) && ( d1.x < d2.x)) {
+					            currentSvg.append("svg:line")
+					                .style("stroke-width", 1)
+					                .style("stroke", "black")
+					                .attr("y1", 0)
+					                .attr("x1", 0)
+					                .attr("x2", r-l)
+					                .attr("y2", b-t);
+					            } else if ((d1.x > d2.x) && (d1.y > d2.y)){
+					            currentSvg.append("svg:line")
+					                .style("stroke-width", 1)
+					                .style("stroke", "black")
+					                .attr("y1", 0)
+					                .attr("x1", 0)
+					                .attr("x2", r-l)
+					                .attr("y2", b-t);
+					            } else if (( d1.y < d2.y) && ( d1.x > d2.x)){
+					                currentSvg.append("svg:line")
+					                    .style("stroke-width", 1)
+					                    .style("stroke", "black")
+					                    .attr("y1", 0)
+					                    .attr("x2", 0)
+					                    .attr("x1", r-l)
+					                    .attr("y2", b-t);
+					                } else if ((d1.x < d2.x) && (d1.y > d2.y)){
+					                currentSvg.append("svg:line")
+					                    .style("stroke-width", 1)
+					                    .style("stroke", "black")
+					                    .attr("y1", 0)
+					                    .attr("x2", 0)
+					                    .attr("x1", r-l)
+					                    .attr("y2", b-t);
+					                } else {
+					                console.log("something is wrong!!!");
+					                }
+
+
+					        return currentSvg;
+    		
+			  }
 			 function mouseover() {
 				   div.transition()
-				       .duration(300)
+				       .duration(100)
 				       .style("opacity", 1);
 				 }
 
 			 function mousemove(d) {
 				   div.text(d.name+ ": " + divvy_matrix[neighborhood][d.number])
-			       .style("left", (d3.event.pageX +25) + "px")
-			       .style("top", (d3.event.pageY - 12) + "px");
+			       .style("left", (d3.event.pageX + 0) + "px")
+			       .style("top", (d3.event.pageY - 30) + "px");
 			 }
 
 			 function mouseout() {
@@ -233,7 +314,10 @@
 			       .style("opacity", 1e-6);
 			}		 
 			
-			function transform(d) {
+			function transform(d, i) {
+
+			    node_coord[i + "," + 0] = d.latitude;
+			    node_coord[i + "," + 1] = d.longitude;
 				 d = new google.maps.LatLng(d.latitude, d.longitude);
 				 d = projection.fromLatLngToDivPixel(d);
 
