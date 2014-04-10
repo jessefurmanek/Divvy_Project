@@ -44,6 +44,7 @@
 	  
 	  #sidebar{
 		background-color: white;
+		font: 13px sans-serif;
 	  }
 	  
 	  #startingPoint{
@@ -79,12 +80,17 @@
 		  text-shadow: 1px 1px 10px white;
 	  }
 	  
+	  .links {
+
+	   position: absolute;
+	  }
+	  
 	  
 	  
 	  </style>
 
 </head>	
- <div id = "sidebar"></div>
+ <div id = "sidebar">From: </div>
  <div id = "neighborhoodButton"></div>
  <div id = "title">Divvy Bike Neighborhood Migration Patterns</div>
 <body>
@@ -97,10 +103,9 @@
 	 // Load the station data. When the data comes back, create an overlay.
 	 
 	 
-	 d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
-	 d3.json("divvy_neighborhoods.json", function(error, json) {
+d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
+	 d3.json("divvy_neighborhoods.json", function(error, data) {
 		if (error) return console.warn(error);
-	    data = json;
 			
 		var dropDownData = data;
 		//do stuff with your data here		
@@ -108,7 +113,8 @@
 		//create menu 
 		var dropDown = d3.select("#sidebar")
 			.append("select")
-			//bind data to "option" elements
+		
+		//bind data to "option" elements
 		dropDown.selectAll("option")
 			.data(dropDownData)
 			.enter().append("option")
@@ -135,13 +141,15 @@
  			    ]
  			 }
 			];
-			map.setOptions({styles:styles});
+		
+		map.setOptions({styles:styles});
  			 //remove labels
- 		
-		 
-	  	
-    	$("#sidebar").on('load change', function() {
-		  
+		
+		$(document).ready(updateData);
+		$('#sidebar').on('change', updateData);
+		
+ 		   	
+		function updateData(){
 		  //update neighborhood to current dropdown selection
 		  neighborhood = 's'+(dropDown.node().selectedIndex+1);
 		  
@@ -156,11 +164,8 @@
 			
 			map.setOptions({styles:styles});
 			//dropDown.node().options[dropDown.node().selectedIndex].value	
-    	 		
-    	 	
-			
-			   
-	   d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
+    	 			   
+		d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
 		//if the data don't load correctly, throw an error on the console
 		if (matrix_error) return console.warn(matrix_error);
 			
@@ -197,9 +202,6 @@
 				.each(transform)
 				.attr("class", "marker");	
 				
-				
-				//.attr("id", "startingPoint")
-				
 				marker.append("svg:circle")  //add circles
 				//size of circles is dependent on the current neighborhood selected
 				.attr("r", function (d) { return Math.log(divvy_matrix[neighborhood][d.number]); })
@@ -211,91 +213,16 @@
 				.on("mouseout", mouseout);	
 						
 			 // Add a label. 
-			 marker.append("svg:text")
+				 marker.append("svg:text")
 				     .attr("x", padding+10)
 				     .attr("y", padding)
 				     .attr("dy", ".31em")
 				     .text(function(d) { return d.name; })
 					 .attr("id", function (d) {if (d.number===neighborhood){return "startingPointText";}});	
 					 
-					 //adding lines
+			 //adding lines
 			 
-			 
-			 var markerLink = layer.selectAll(".links")
-			      .data(json.links)
-			      .each(pathTransform) // update existing markers       
-			      .enter().append("svg:svg")
-				  .attr("class", "links")
-				  .each(pathTransform);
-			
-		function pathTransform(d) {
-			  var t, b, l, r, w, h, currentSvg;
-			  $(this).empty(); // get rid of the old lines (cannot use d3 .remove() because i cannot use selectors after ... )
-
-			  var dsrc = new google.maps.LatLng(node_coord[d.source-1 + "," + 1], node_coord[d.source-1 + "," + 0]);
-			  var dtrg = new google.maps.LatLng(node_coord[d.target-1 + "," + 1], node_coord[d.target-1 + "," + 0]);
-			  var d1 = projection.fromLatLngToDivPixel(dsrc);
-			  var d2 = projection.fromLatLngToDivPixel(dtrg);
-						if ( d1.y < d2.y ) {
-					            t = d1.y;
-					            b = d2.y;
-					        } else {
-					            t = d2.y;
-					            b = d1.y;
-					        }
-					        if ( d1.x < d2.x ) {
-					            l = d1.x;
-					            r = d2.x;
-					        } else {
-					            l = d2.x;
-					            r = d1.x; 
-					        }
-					        currentSvg = d3.select(this)
-					            .style("left", (l) + "px")
-					            .style("top", (t) + "px")
-					            .style("width", (r - l) + "px")
-					            .style("height", (b - t) + "px");
-					        // drawing the diagonal lines inside the svg elements. We could use 2 cases instead of for but maybe you will need to orient your graph (so you can use some arrows)
-					        if (( d1.y < d2.y) && ( d1.x < d2.x)) {
-					            currentSvg.append("svg:line")
-					                .style("stroke-width", 1)
-					                .style("stroke", "black")
-					                .attr("y1", 0)
-					                .attr("x1", 0)
-					                .attr("x2", r-l)
-					                .attr("y2", b-t);
-					            } else if ((d1.x > d2.x) && (d1.y > d2.y)){
-					            currentSvg.append("svg:line")
-					                .style("stroke-width", 1)
-					                .style("stroke", "black")
-					                .attr("y1", 0)
-					                .attr("x1", 0)
-					                .attr("x2", r-l)
-					                .attr("y2", b-t);
-					            } else if (( d1.y < d2.y) && ( d1.x > d2.x)){
-					                currentSvg.append("svg:line")
-					                    .style("stroke-width", 1)
-					                    .style("stroke", "black")
-					                    .attr("y1", 0)
-					                    .attr("x2", 0)
-					                    .attr("x1", r-l)
-					                    .attr("y2", b-t);
-					                } else if ((d1.x < d2.x) && (d1.y > d2.y)){
-					                currentSvg.append("svg:line")
-					                    .style("stroke-width", 1)
-					                    .style("stroke", "black")
-					                    .attr("y1", 0)
-					                    .attr("x2", 0)
-					                    .attr("x1", r-l)
-					                    .attr("y2", b-t);
-					                } else {
-					                console.log("something is wrong!!!");
-					                }
-
-
-					        return currentSvg;
-    		
-			  }
+		
 			 function mouseover() {
 				   div.transition()
 				       .duration(100)
@@ -314,10 +241,8 @@
 			       .style("opacity", 1e-6);
 			}		 
 			
-			function transform(d, i) {
+			function transform(d) {
 
-			    node_coord[i + "," + 0] = d.latitude;
-			    node_coord[i + "," + 1] = d.longitude;
 				 d = new google.maps.LatLng(d.latitude, d.longitude);
 				 d = projection.fromLatLngToDivPixel(d);
 
@@ -325,25 +250,28 @@
 				//i.e. it could have been written like this: d3.select(this).style("left", (d.x - padding) + "px").style("top", (d.y - padding) + "px");
 				 return d3.select(this) 
 					.style("left", (d.x - padding) + "px")
-		        	.style("top", (d.y - padding) + "px");  
-				}	
-   		     };			  	 
-		   };
+		        	.style("top", (d.y - padding) + "px"); 
+			}	
+		};			  	 
+	};
 		   
 		   // Bind our overlay to the map…
-		   overlay.setMap(map);
+	overlay.setMap(map);
 			
-		   	 });
-		}); 
-	 });
+		   	 });  //close divvy_matrix
+		
+			 //}); 
+		 };  //send update data
 		 
-	});
-		 //add jSON file from dropbox
-		// var neighborhoodData = $.getJSON( "https://www.dropbox.com/s/c02ip8mz4za9mxu/divvy_trips_w_neighborhoods.json", function( data ) {};
+	 });  //close dropdown data
 		 
-	  </script>
+	});  //close neighborhood data
+	
+ </script>
 	  
 	<script>  
+	
+	
  	
 	</script>
 	 
