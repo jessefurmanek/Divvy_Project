@@ -40,6 +40,7 @@
  		margin-left:auto;
  		margin-right:auto;
 		width: 800px;
+		position:relative;
 	  }
 	  
 	  #sidebar{
@@ -56,6 +57,13 @@
 		font-weight:bold;
 		font: 13px sans-serif;
 		text-shadow: 2px 2px 10px green;
+	  }
+	  
+	  #tableBlock{
+		float:left;  
+		position: absolute;
+		width: 200px;
+		font: 13px sans-serif;	
 	  }
 	  
 	  .stations, .stations svg {
@@ -91,6 +99,9 @@
 
 </head>	
  <div id = "sidebar">From: </div>
+ <div id = "tableBlock">To:
+	 <div id= "tableData">data goes here data goes here data goes here data goes here </div>
+ </div>
  <div id = "neighborhoodButton"></div>
  <div id = "title">Divvy Bike Neighborhood Migration Patterns</div>
 <body>
@@ -269,11 +280,33 @@ d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 	
  </script>
 	  
-	<script>  
+<script>  //made using http://www.delimited.io/blog/2013/11/8/object-constancy-in-d3 as my template
+//create the table to the left	
+
+var dropDown = d3.select("#sidebar select").on("change", change);  //find the sidebar
+var curSelection = 	's'+(dropDown.node().selectedIndex+1);  //select the current selection
+
+var svg = d3.select("#tableData").append("svg")  //set up an svg container for the visualization
+      .attr("width", 200)
+      .attr("height", 600)
+      .style("margin-left", -100 + "px");
 	
-	
+d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
+			
+			
  	
-	</script>
+}
+
+
+function change(){
+	
+}
+
+function render(){
+	
+}
+
+</script>
 	 
   </body>
  
