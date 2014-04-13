@@ -206,6 +206,7 @@ d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 			var node_coord = {};
 			var projection = this.getProjection(),
 		          padding = 10;
+				  
 			marker = layer.selectAll("svg")
 				.data(data)
 		      	.each(transform) // update existing markers position (when zooming for example)	
@@ -278,37 +279,41 @@ d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 		 
 	});  //close neighborhood data
 	
- </script>
+	//create the table to the left	
+	
+	//made using http://www.delimited.io/blog/2013/11/8/object-constancy-in-d3 as my template
+	
+
+	var dropDown = d3.select("#sidebar select");  //find the sidebar
+	var curSelection = 	's'+(dropDown.node().selectedIndex+1);  //select the current selection
+
+	var svg = d3.select("#tableData").append("svg")  //set up an svg container for the visualization
+	      .attr("width", 200)
+	      .attr("height", 600)
+	      .style("margin-left", -100 + "px");
 	  
-<script>  //made using http://www.delimited.io/blog/2013/11/8/object-constancy-in-d3 as my template
-//create the table to the left	
+	var x = d3.scale.linear() //Using x scale to size the bubbles, max of 22px
+	      .range([0, 22]);
 
-var dropDown = d3.select("#sidebar select").on("change", change);  //find the sidebar
-var curSelection = 	's'+(dropDown.node().selectedIndex+1);  //select the current selection
-
-var svg = d3.select("#tableData").append("svg")  //set up an svg container for the visualization
-      .attr("width", 200)
-      .attr("height", 600)
-      .style("margin-left", -100 + "px");
+	var y = d3.scale.ordinal() // Rangebands on the y-axis to order the bubbles
+	      .rangeRoundBands([0, 600], .1);
+	  
+	var color = d3.scale.ordinal().range(['#74E600']);
 	
-d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
-			
-			
- 	
-}
+	d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
+		
+		table = svg.selectAll("circle")	
+			.data(data)
+			.each(transform) // update existing markers position (when zooming for example)	
+			.enter().append("svg:circle")
+			.each(transform)
+			.attr("class", "tableCircle");	
+	});	
+		
 
-
-function change(){
-	
-}
-
-function render(){
-	
-}
-
-</script>
+ </script>
 	 
-  </body>
+</body>
  
 
 </html>
