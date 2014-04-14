@@ -39,6 +39,7 @@
 	  	font: 40px sans-serif;
  		margin-left:auto;
  		margin-right:auto;
+		margin-top:-30px;
 		width: 800px;
 		position:relative;
 	  }
@@ -59,15 +60,22 @@
 		text-shadow: 2px 2px 10px green;
 	  }
 	  
-	  #tableBlock{
+	  #tableData{
 		float:left;  
 		position: absolute;
 		width: 200px;
-		font: 13px sans-serif;	
+		font: 13px sans-serif;
+		margin-top:15px;	
 	  }
 	  
 	  .stations, .stations svg {
 	    position: absolute;
+	  }
+	  
+	  #tableClass{
+    	    fill: #25F;
+    	    stroke: grey;
+    	    stroke-width: .5px;
 	  }
 
 	  .stations svg {
@@ -87,6 +95,11 @@
 	  .stations text{
 		  text-shadow: 1px 1px 10px white;
 	  }
+	  .tableCircle circle{
+  	    fill: #25F;
+  	    stroke: grey;
+  	    stroke-width: .5px;
+	  }
 	  
 	  .links {
 
@@ -99,9 +112,9 @@
 
 </head>	
  <div id = "sidebar">From: </div>
- <div id = "tableBlock">To:
-	 <div id= "tableData">data goes here data goes here data goes here data goes here </div>
- </div>
+
+<div id= "tableData">To:</div>
+
  <div id = "neighborhoodButton"></div>
  <div id = "title">Divvy Bike Neighborhood Migration Patterns</div>
 <body>
@@ -156,8 +169,14 @@ d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 		map.setOptions({styles:styles});
  			 //remove labels
 		
-		$(document).ready(updateData);
-		$('#sidebar').on('change', updateData);
+		$(document).ready(function(){
+			updateData();
+			updateTable();
+		});
+		$('#sidebar').on('change', function(){
+			updateData();
+			updateTable();
+		});
 		
  		   	
 		function updateData(){
@@ -188,11 +207,15 @@ d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 			var layer = d3.select(this.getPanes().overlayMouseTarget).append("div")  //overlayMouseTarget is used instead of overylayLayer
 		    .attr("class", "stations");
   			
-			d3.selectAll("circle")
+			d3.selectAll(".otherPoint") //clear the previous data
   				.style("fill", "none")
   				.style("stroke", "none");	
 			
-			d3.selectAll("text")
+			d3.selectAll(".startingPoint")  //clear the previous starting point data
+	  			.style("fill", "none")
+	  			.style("stroke", "none");	
+			
+			d3.selectAll(".mapPoints")
 				.text("");	
 				
 			var div = d3.select("body").append("div")
@@ -219,7 +242,13 @@ d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 				.attr("r", function (d) { return Math.log(divvy_matrix[neighborhood][d.number]); })
 				.attr("cx", padding)
 				.attr("cy", padding)
-				.attr("id", function (d) {if (d.number===neighborhood){return "startingPoint";}})
+				.attr("class", "mapPoints")	
+				.attr("id", function (d) {
+					if (d.number===neighborhood){return "startingPoint";
+					}else{
+						return"otherPoint";
+					}
+				})
 				.on("mouseover", mouseover)
 				.on("mousemove", mousemove)
 				.on("mouseout", mouseout);	
@@ -279,38 +308,60 @@ d3.json("divvy_neighborhoods_table.json", function(error, neighborhoods_table) {
 		 
 	});  //close neighborhood data
 	
-	//create the table to the left	
-	
-	//made using http://www.delimited.io/blog/2013/11/8/object-constancy-in-d3 as my template
-	
-
-	var dropDown = d3.select("#sidebar");	  //find the sidebar
-	var curSelection = 	's'+(dropDown.node().selectedIndex+1);  //select the current selection
-
+		
 	var svgContainer = d3.select("#tableData").append("svg") //set up an svg container for the visualization
 		.attr("width", 200)	      
-		.attr("height", 600)
+		.attr("height", 750)
 		.attr("class", "tableCircle")
-	    .style("margin-left", 100 + "px");
+	    .style("margin-left", 25 + "px")
+	    .style("margin-top", -20 + "px");	
 		
-		
-	var circle = svgContainer.append("circle")
-		.attr("cx", 30)
-		.attr("cy", 30)
-		.attr("r", 20);
-	  
+function updateTable(){
+	var dropDown = d3.select("#sidebar");	  //find the sidebar
+	var curSelection = 	's'+(dropDown.node().selectedIndex+1);  //select the current drop down selection
+
 	
   	  	d3.json('divvy_neighborhoods.json', function(neighborhood_error, neighborhood_table) {
 		d3.json('divvy_trips_matrix.json', function(matrix_error, divvy_matrix) {
-  	  		
-			var table = svgContainer.selectAll("circle")	
-  	  			.data(neighborhood_table)
+			
+			var textRemove = svgContainer.selectAll("text");
+			textRemove.remove();
+			
+			var circleRemove = svgContainer.selectAll("circle");
+			circleRemove.remove();
+			
+			var table = svgContainer.selectAll("g")	//select all the svg groups
+  	  			.data(neighborhood_table)  //add a svg group for any data points where there isn't a g
   	  			.enter() 
-  	  			.append("circle");
-		
+  	  			.append("g");
+				
+			var textAdd = svgContainer.selectAll("text")
+  	  			.data(neighborhood_table) 
+  	  			.enter() 
+  	  			.append("text")
+  			    .attr("x", 20)
+  			    .attr("y",function(d) { return 15 *(d.number).replace(/^\D+/g, '');} )
+  				.attr("dy", ".37em")
+  			    .text(function(d) { return d.name+": " +divvy_matrix[neighborhood][d.number]; });
+			
+
+			var circleAdd = svgContainer.selectAll("circle")
+				.data(neighborhood_table) 
+				.enter() 
+				.append("circle")
+				.attr("r", function (d) { return Math.log(divvy_matrix[neighborhood][d.number]); })
+				.attr("cx", 10)
+				.attr("id", function (d) {
+					if (d.number===neighborhood){return "startingPoint";
+					}else{
+						return"otherPoint";
+					}
+				})
+				.attr("cy", function (d) { return 15*(d.number).replace(/^\D+/g, '');});	
+
 	  	});	
 	});
-
+};
  </script>
 	 
 </body>
